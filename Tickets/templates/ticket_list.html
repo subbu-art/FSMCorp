@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Ticket List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-top: 30px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        li {
+            background-color: #fff;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        li a {
+            color: #333;
+            text-decoration: none;
+        }
+        li:hover {
+            background-color:#586363;
+        }
+        .no-tickets {
+            text-align: center;
+            font-style: italic;
+            color: #999;
+        }
+        .logout-section {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 9999; /* Ensure the button appears above other content */
+}
+
+.logout-btn {
+    padding: 5px 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    float: right; /* Align the button to the right */
+    margin-right: 10px; /* Add some right margin for spacing */
+
+}
+
+.logout-btn:hover {
+    background-color: #0056b3;
+}
+
+.btn {
+    padding: 5px 10px;
+    background-color: #002bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    float: right; /* Align the button to the right */
+    margin-right: 30px; /* Add some right margin for spacing */
+
+}
+
+.ticket-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ticket-table th, .ticket-table td {
+    padding: 8px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.ticket-table th {
+    background-color: #f2f2f2;
+}
+
+.ticket-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.ticket-table tbody tr:hover {
+    background-color: #ddd;
+}
+
+.no-tickets {
+    text-align: center;
+    font-style: italic;
+    color: #999;
+}
+
+.status-btn {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">Ticket System</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav me-auto mb-2 mb-sm-0">
+
+                    <a href="/" class="btn btn-primary ms-2">Home</a>
+            </ul>
+            <div class="d-flex align-items-center">
+                <span class="text-light me-3">Welcome, {{ user.username }}</span>
+                <form action="{% url 'logout' %}" method="post" class="d-flex align-items-center">
+                    {% csrf_token %}
+<!--                    <a href="{% url 'ticket-list' %}" class="btn btn-primary ms-2">List Tickets</a>-->
+                    {% if user.is_superuser or not user.is_staff %}
+                    <a href="{% url 'ticket-create' %}" class="btn btn-primary ms-2">Create Ticket</a>
+                    {% endif %}
+                    &nbsp;&nbsp;&nbsp;
+                    <button type="submit" class="btn btn-warning">Logout</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+
+
+<!--&lt;!&ndash; Logout button &ndash;&gt;-->
+<!--    <div class="logout-btn">-->
+<!--        {% if user.is_authenticated %}-->
+<!--            <form action="{% url 'logout' %}" method="post" class="logout-form">-->
+<!--                {% csrf_token %}-->
+<!--                <button type="submit" class="logout-btn">Logout</button>-->
+<!--            </form>-->
+<!--        {% endif %}-->
+<!--    </div>-->
+<!--{% if user.is_superuser or not user.is_staff %}-->
+<!--<a href="{% url 'ticket-create' %}" ><button class="btn">Create New Ticket</button></a>-->
+<!--{% endif %}-->
+     {% if tickets %}
+    <h1>Ticket List</h1>
+    <table class="ticket-table">
+        <thead>
+            <tr>
+                <th>Ticket ID</th>
+                <th>Title</th>
+                <th>Priority</th>
+                <th>Severity</th>
+                <th>Status</th>
+                <th>Assigned To</th>
+                <th>Created By</th>
+                <th>Deadline</th>
+                <th>Created At</th>
+                {% if request.user.is_superuser %}
+                <th>Action</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in tickets %}
+                <tr>
+                    <td>{{ ticket.id }}</td>
+                    <td><a href="{% url 'ticket-detail' ticket.id %}">{{ ticket.title }}</a></td>
+                    <td>{{ ticket.priority }}</td>
+                    <td>{{ ticket.severity }}</td>
+                    <td><button type="None" class="status-btn">{{ ticket.status }}</button></td>
+                    <td>{{ ticket.assigned_to }}</td>
+                    <td>{{ ticket.created_by }}</td>
+                    <td>{{ ticket.deadline }}</td>
+                    <td>{{ ticket.created_at }}</td>
+                    {% if request.user.is_superuser and not ticket.assigned_to %}
+                    <td> <a href="{% url 'assign-ticket' ticket.id %}" class="btn btn-primary ms-2">Assign Engineer</a></td>
+
+                    {% endif %}
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="8" class="no-tickets">No tickets found.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+</body>
+</html>

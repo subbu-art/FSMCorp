@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+<!-- tickets.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tickets</title>
+</head>
+<body>
+    <h1>Tickets</h1>
+
+    <!-- Display list of tickets -->
+    <h2>List of Tickets</h2>
+    <ul>
+        {% for ticket in tickets %}
+            <li><a href="{% url 'ticket-detail' ticket.id %}">{{ ticket.title }}</a></li>
+        {% empty %}
+            <li>No tickets found.</li>
+        {% endfor %}
+    </ul>
+
+    <!-- Form to create a new ticket -->
+    <h2>Create New Ticket</h2>
+    <form method="post" action="{% url 'create-ticket' %}">
+        {% csrf_token %}
+        <label for="title">Title:</label><br>
+        <input type="text" id="title" name="title" required><br>
+        <label for="description">Description:</label><br>
+        <textarea id="description" name="description" required></textarea><br>
+        <label for="priority">Priority:</label><br>
+        <select id="priority" name="priority">
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+        </select><br>
+        <label for="severity">Severity:</label><br>
+        <select id="severity" name="severity">
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+        </select><br>
+        <button type="submit">Create Ticket</button>
+    </form>
+
+    <!-- Form to add notes to an existing ticket -->
+    <h2>Add Note to Ticket</h2>
+    <form method="post" action="{% url 'add-note' ticket.id %}">
+        {% csrf_token %}
+        <textarea id="note" name="note" required></textarea><br>
+        <button type="submit">Add Note</button>
+    </form>
+
+    <!-- Redirect button -->
+    <a href="{% url 'home' %}">Back to Home</a>
+</body>
+</html>
